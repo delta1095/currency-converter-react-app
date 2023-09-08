@@ -11,6 +11,10 @@
   margin-inline: auto;
 }
 
+.error {
+  color: red;
+}
+
 .amount {
   flex: 1;
   display: flex;

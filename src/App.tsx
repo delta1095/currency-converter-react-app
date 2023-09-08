@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { countries } from "./countries";
 
+type Rates = {
+  result: string;
+  conversion_rates: Record<string, string>;
+};
+
 function App() {
   const [amount, setAmount] = useState(0);
   const [from, setFrom] = useState<null | { code: string; currency: string }>({
@@ -10,27 +15,39 @@ function App() {
   });
   const [showFromDropdown, setShowFromDropdown] = useState(false);
 
-  const [rates, setRates] = useState<null | {
-    result: string;
-    conversion_rates: Record<string, string>;
-  }>(null);
+  const [rates, setRates] = useState<null | Rates>(null);
+
+  const [error, setError] = useState<null | string>(null);
 
   useEffect(() => {
     setRates(null);
   }, [from]);
 
   const getRates = async () => {
-    const response = await fetch(
-      `https://v6.exchangerate-api.com/v6/${process.env.REACT_APP_API_KEY}/latest/${from?.currency}`
-    );
+    if (amount <= 0) {
+      setError("Please enter an amount more than 0.");
+      setRates(null);
+      return;
+    }
 
-    const data = await response.json();
+    try {
+      const response = await fetch(
+        `https://v6.exchangerate-api.com/v6/${process.env.REACT_APP_API_KEY}/latest/${from?.currency}`
+      );
 
-    setRates(data);
+      const data = await response.json();
+
+      setRates(data);
+      setError(null);
+    } catch (error) {
+      setRates(null);
+      setError("Some error occurred. Please try again!");
+    }
   };
   return (
     <div className="App">
       <h1>Currency Converter</h1>
+      {error ? <span className="error">{error}</span> : null}
       <div className="amount">
         <label htmlFor="amount">Amount</label>
         <input
